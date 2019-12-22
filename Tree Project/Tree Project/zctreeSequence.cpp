@@ -44,8 +44,17 @@ TreeNode* DesequenceTree(string str, int *pos)
 	}
 	root->iVal = atoi(tmpStr.c_str());
 	*pos = *pos + tmpPos+1;
-	root->leftChild = DesequenceTree(str, pos);
+	root->leftChild = DesequenceTree(str, pos); 
+	if (root->leftChild)
+	{
+		root->leftChild->ParentNode = root;
+	}
+
 	root->rightChild = DesequenceTree(str, pos);
+	if (root->rightChild)
+	{
+		root->rightChild->ParentNode = root;
+	}
 	return root;
 }
 
@@ -61,7 +70,7 @@ void testSequenceTree()
 	StrTest = SequenceTree(root);
 	if (Str == StrTest)
 	{
-		cout << "testSequenceTree success";
+		cout << "testSequenceTree success \n";
 	}
 	return;
 

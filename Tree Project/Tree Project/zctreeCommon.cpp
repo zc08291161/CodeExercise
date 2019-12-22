@@ -11,7 +11,7 @@ TreeNode* MakeRoot(int val)
 	tmp->iVal = val;
 	tmp->leftChild = NULL;
 	tmp->rightChild = NULL;
-	tmp->ParentChild = NULL;
+	tmp->ParentNode = NULL;
 	return tmp;
 }
 
@@ -21,7 +21,7 @@ void InsertLeftChild(TreeNode *Parent, int val)
 	tmp->iVal = val;
 	tmp->leftChild = NULL;
 	tmp->rightChild = NULL;
-	tmp->ParentChild = NULL;
+	tmp->ParentNode = NULL;
 	Parent->leftChild = tmp;
 	return;
 }
@@ -32,7 +32,7 @@ void InsertRightChild(TreeNode *Parent, int val)
 	tmp->iVal = val;
 	tmp->leftChild = NULL;
 	tmp->rightChild = NULL;
-	tmp->ParentChild = NULL;
+	tmp->ParentNode = NULL;
 	Parent->rightChild = tmp;
 	return;
 }

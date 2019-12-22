@@ -9,6 +9,7 @@ using namespace std;
 int main()
 {
 	testSequenceTree();
+	testFindComPaWiNoPaPtr();
 	system("pause");
 	return 0;
 }
