@@ -1,0 +1,5 @@
+﻿  static_cast.cpp
+e:\工作\git_code\codeexercise\static_cast\static_cast\static_cast\static_cast.cpp(29): warning C4584: “C”: 基类“A”已是“B”的基类
+  e:\工作\git_code\codeexercise\static_cast\static_cast\static_cast\static_cast.cpp(5): note: 参见“A”的声明
+  e:\工作\git_code\codeexercise\static_cast\static_cast\static_cast\static_cast.cpp(12): note: 参见“B”的声明
+  static_cast.vcxproj -> E:\工作\git_code\CodeExercise\static_cast\static_cast\Debug\static_cast.exe
