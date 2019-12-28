@@ -10,6 +10,7 @@ int main()
 {
 	testSequenceTree();
 	testFindComPaWiNoPaPtr();
+	testFindExactNumInPath();
 	system("pause");
 	return 0;
 }

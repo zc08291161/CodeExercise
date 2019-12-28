@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FindCommonParent.cpp" />
+    <ClCompile Include="FindExactNumInPath.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="zctreeCommon.cpp" />
     <ClCompile Include="zctreeSequence.cpp" />

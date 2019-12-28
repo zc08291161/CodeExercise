@@ -11,3 +11,4 @@ extern string SequenceTree(TreeNode *root);
 extern TreeNode* DesequenceTree(string str, int *pos);
 extern void testSequenceTree();
 extern void testFindComPaWiNoPaPtr();
+extern void testFindExactNumInPath();
