@@ -4,8 +4,10 @@
 #include<iostream>
 #include<string>
 #include<list>
+#include<queue>
 using namespace std;
 list<int> gList;
+vector<list<int>> vGlist;
 
 int findFirstParentInList(list<int> Lint1, list<int> Lint2)
 {
@@ -39,7 +41,7 @@ int findFirstParentInList(list<int> Lint1, list<int> Lint2)
 	}
 }
 
-/* 获取二叉树中含有特定值得路径 */
+/* 获取二叉树中含有特定值得路径 递归调用 */
 bool findValuePath(int iVal, TreeNode* root)
 {
 	if (root == NULL)
@@ -69,6 +71,69 @@ bool findValuePath(int iVal, TreeNode* root)
 		}
 	}
 }
+/* 获取二叉树中含有特定值得路径 非递归法，广度优先
+依靠广度优先实现二叉树路径的搜索就比较麻烦，因为需要把所有路径
+都记录下来，不知道哪个路径是真正对的，得到最后一层才能直到最终对的
+那条路径，之前所有的记录都是无效的内存浪费*/
+struct Map_S
+{
+	TreeNode *treeNode;
+	list<int> vList;
+};
+
+bool findValuePath8BFS(int iVal, TreeNode* root)
+{
+	queue<Map_S> qTreeNode;
+	if (root->iVal == iVal)
+	{
+		return true;
+	}
+
+	Map_S TmpMap;
+	TmpMap.treeNode = root;
+	TmpMap.vList.push_back(root->iVal);
+	qTreeNode.push(TmpMap);
+
+	while (qTreeNode.size() != 0)
+	{
+		int iSize = qTreeNode.size();
+		while (iSize != 0)
+		{
+			Map_S TmpMap1 = qTreeNode.front();
+			TreeNode *TmpNode = TmpMap1.treeNode;
+			
+			if (TmpNode->leftChild != NULL)
+			{
+				if (TmpNode->leftChild->iVal == iVal)
+				{
+					TmpMap1.vList.push_back(TmpNode->leftChild->iVal);
+					gList = TmpMap1.vList;
+					return true;
+				}
+				TmpMap1.treeNode = TmpNode->leftChild;
+				TmpMap1.vList.push_back(TmpNode->leftChild->iVal);
+				qTreeNode.push(TmpMap1);
+			}
+			TmpMap1 = qTreeNode.front();
+			if (TmpNode->rightChild != NULL)
+			{
+				if (TmpNode->rightChild->iVal == iVal)
+				{
+					TmpMap1.vList.push_back(TmpNode->rightChild->iVal);
+					gList = TmpMap1.vList;
+					return true;
+				}
+				TmpMap1.treeNode = TmpNode->rightChild;
+				TmpMap1.vList.push_back(TmpNode->rightChild->iVal);
+				qTreeNode.push(TmpMap1);
+			}
+			qTreeNode.pop();
+			iSize--;
+		}
+	}
+}
+
+
 /*获取最近的祖先，没有父亲指针 都是假设整棵树里面的各个值只有一个 */
 int FindcommonPaWithNoPaPtr(int iVal1, int iVal2, TreeNode* root)
 {
@@ -81,7 +146,7 @@ int FindcommonPaWithNoPaPtr(int iVal1, int iVal2, TreeNode* root)
 	}
 	list<int> gTmp1 = gList;
 	gList.clear();
-	IsFind = findValuePath(iVal2, root);
+	IsFind = findValuePath8BFS(iVal2, root);
 	if (IsFind == 0)
 	{
 		return -1;

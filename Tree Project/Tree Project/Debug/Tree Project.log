@@ -1,2 +1,4 @@
-﻿  FindExactNumInPath.cpp
+﻿  FindCommonParent.cpp
+e:\工作\git_code\codeexercise\tree project\tree project\findcommonparent.cpp(42): warning C4715: “findFirstParentInList”: 不是所有的控件路径都返回值
+e:\工作\git_code\codeexercise\tree project\tree project\findcommonparent.cpp(131): warning C4715: “findValuePath8BFS”: 不是所有的控件路径都返回值
   Tree Project.vcxproj -> E:\工作\git_code\CodeExercise\Tree Project\Debug\Tree Project.exe
