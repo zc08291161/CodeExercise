@@ -1,0 +1,1 @@
+g++ -o ThreadPool -g zcThreadPool.cpp zcmain.cpp zclist.cpp -lpthread
