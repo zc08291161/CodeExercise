@@ -14,6 +14,7 @@ class ZC_ThreadPool
 	void TP_ChangeCurrentNum(int iNum);
 	int TP_Start();
 	int TP_Destroy();
+	void TP_MonitorAutoKill();
 	static void* TP_MonitorHandle(void *args);
 	static void* TP_WorkHandle(void *args);
 	private:

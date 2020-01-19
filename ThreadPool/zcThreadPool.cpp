@@ -9,6 +9,7 @@ ZC_ThreadPool::ZC_ThreadPool(int iMaxNum, int iDefaultNum, TP_FUN pFun, ZC_List 
 {
 	_iEnableMaxNum = iMaxNum;
 	_iDefaultNum = iDefaultNum;
+	_iFreeNum = 0;
 	this->pFun = pFun;
 	this->_gList = gList;
 	_bTpAlive = true;
@@ -27,14 +28,35 @@ void ZC_ThreadPool::TP_ChangeCurrentNum(int iNum)
 	return;
 }
 
+/* 自动杀死一半的等待线程 TODO:后续更改为等待够一定时间之后，再杀死 */
+void ZC_ThreadPool::TP_MonitorAutoKill()
+{ 
+	pthread_mutex_lock(&this->_mutex4FreeNum);
+	int iKillNum = _iFreeNum/2;
+	pthread_mutex_unlock(&this->_mutex4FreeNum);
+	for (int i = 0; i<iKillNum; i++)
+	{
+		if (!pthread_cancel(this->_tpArray[_iCurrentNum-1-i]))
+		{
+			_iFreeNum--;		
+			printf("pthread_cancle Loop(%d)TPNum(%d) Ok\n",i, _iCurrentNum-1-i);
+		}
+	}
+	_iCurrentNum -= iKillNum;
+	return;
+}
+
 void* ZC_ThreadPool::TP_MonitorHandle(void *args)
 {
 	ZC_ThreadPool *p=(ZC_ThreadPool *)args;
 
 	while(p->_bTpAlive)
 	{
-		printf("TP_MonitorHandle begin loop\n");
 		sleep(1);
+		if (p->_iFreeNum > 0)
+		{
+			p->TP_MonitorAutoKill();
+		}
 		
 	}
 }
@@ -86,7 +108,11 @@ int ZC_ThreadPool::TP_Start()
 	pthread_create(&MonitorTP,0,TP_MonitorHandle,(void*)this);
 
 	this->_tpArray = (pthread_t*)malloc(_iDefaultNum * sizeof(pthread_t));
-	
+	if (NULL == this->_tpArray)
+	{
+		printf("alloc fail");
+		return -1;
+	}
 	for(int i = 0; i<_iDefaultNum; i++)
 	{
 		_iCurrentNum++;
