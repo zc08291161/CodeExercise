@@ -1,9 +1,15 @@
 #ifndef THREAD_POOL_H
 #define THREAD_POOL_H
 #include "zclist.h"
+#include<vector>
 
 typedef  void(*TP_FUN)(void *args);
 
+typedef struct Thread_ContrlBlock
+{
+	pthread_t *_tpArray;
+	unsigned int tid;
+}Th_cb_S;
 
 class ZC_ThreadPool
 {
@@ -17,6 +23,7 @@ class ZC_ThreadPool
 	void TP_MonitorAutoKill();
 	static void* TP_MonitorHandle(void *args);
 	static void* TP_WorkHandle(void *args);
+	
 	private:
 	int _iEnableMaxNum;
 	int _iCurrentNum;
@@ -26,6 +33,7 @@ class ZC_ThreadPool
 	TP_FUN pFun;
 	ZC_List  *_gList;
 	bool _bTpAlive;
+	std::vector<Th_cb_S> vTh;
 	pthread_t *_tpArray;
 };
 
