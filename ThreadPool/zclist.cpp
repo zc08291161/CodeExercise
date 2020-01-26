@@ -2,6 +2,7 @@
 #include<string>
 #include<pthread.h>
 
+
 ZC_List::ZC_List()
 {
 	pthread_cond_init(&this->_cond4list, NULL);
@@ -15,6 +16,12 @@ void ZC_List::ZL_Wait4Cond()
 {
 	pthread_mutex_lock(&this->_mutex4cond);
 	pthread_cond_wait(&this->_cond4list, &this->_mutex4cond);
+	pthread_mutex_unlock(&this->_mutex4cond);
+	return;
+}
+
+void ZC_List::ZL_Mutex4CondUnlock()
+{
 	pthread_mutex_unlock(&this->_mutex4cond);
 	return;
 }

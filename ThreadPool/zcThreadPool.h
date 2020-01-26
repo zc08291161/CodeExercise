@@ -7,8 +7,9 @@ typedef  void(*TP_FUN)(void *args);
 
 typedef struct Thread_ContrlBlock
 {
-	pthread_t *_tpArray;
+	pthread_t *pth;
 	unsigned int tid;
+	bool      bIsFree;
 }Th_cb_S;
 
 class ZC_ThreadPool
@@ -23,7 +24,10 @@ class ZC_ThreadPool
 	void TP_MonitorAutoKill();
 	static void* TP_MonitorHandle(void *args);
 	static void* TP_WorkHandle(void *args);
-	
+	static void TP_CleanUp(void *args);
+	int TP_FindThread8Tid(unsigned int tid);
+	int TP_GetFreeTpNum();
+		
 	private:
 	int _iEnableMaxNum;
 	int _iCurrentNum;

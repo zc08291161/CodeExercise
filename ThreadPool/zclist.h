@@ -28,8 +28,9 @@ class ZC_List
 	ZC_Node_S* ZL_MakeZcNode(std::string str);
 	void ZL_PutZcNode(ZC_Node_S* pZcNode);
 	void ZL_BroadCastCond();
-
+	void ZL_Mutex4CondUnlock();
 	
+
 	private:
 	pthread_mutex_t  _mutex4list;
 	pthread_mutex_t  _mutex4cond;
