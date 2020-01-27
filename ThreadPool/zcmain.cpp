@@ -10,7 +10,7 @@ void  zcTp_Test(void *args)
 	pthread_t tid;
 	pid = getpid();
 	tid = pthread_self();
-	
+	sleep(1);
 	printf("ZcNode handle:: pid(%d)tid(%d)handle Seriono(%d) Str(%s)\n", 
 			(unsigned int)pid, (unsigned int)tid, 
 			pZcNode->iSeriNo, pZcNode->str.c_str());

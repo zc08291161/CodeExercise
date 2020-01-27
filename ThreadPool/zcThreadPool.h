@@ -22,18 +22,20 @@ class ZC_ThreadPool
 	int TP_Start();
 	int TP_Destroy();
 	void TP_MonitorAutoKill();
+	void TP_MonitorAutoAdd(int iReqNum);
 	static void* TP_MonitorHandle(void *args);
 	static void* TP_WorkHandle(void *args);
 	static void TP_CleanUp(void *args);
 	int TP_FindThread8Tid(unsigned int tid);
 	int TP_GetFreeTpNum();
-		
+	int TP_AddThread();
+	
 	private:
 	int _iEnableMaxNum;
 	int _iCurrentNum;
 	int _iDefaultNum;
 	int _iFreeNum;
-	pthread_mutex_t _mutex4FreeNum;
+	pthread_mutex_t _mutex4TpCb;
 	TP_FUN pFun;
 	ZC_List  *_gList;
 	bool _bTpAlive;

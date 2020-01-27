@@ -33,8 +33,8 @@ int ZC_ThreadPool::TP_GetFreeTpNum()
 {
 	int iTpNum = 0;
 	int iFreeNum = 0;
-	/* */
-	pthread_mutex_lock(&this->_mutex4FreeNum);
+	/* mutex 4 get Tp num*/
+	pthread_mutex_lock(&this->_mutex4TpCb);
 	iTpNum = this->vTh.size();
 	for(int i = 0; i<iTpNum; i++)
 	{
@@ -44,7 +44,7 @@ int ZC_ThreadPool::TP_GetFreeTpNum()
 		}
 	}
 	
-	pthread_mutex_unlock(&this->_mutex4FreeNum);
+	pthread_mutex_unlock(&this->_mutex4TpCb);
 	return iFreeNum;
 }
 
@@ -70,7 +70,7 @@ void ZC_ThreadPool::TP_MonitorAutoKill()
 	for (int i = 0; i<iKillNum; i++)
 	{
 		/*this lock is for vector vTh pop*/
-		pthread_mutex_lock(&this->_mutex4FreeNum);
+		pthread_mutex_lock(&this->_mutex4TpCb);
 		Th_cb_S *pTh_Cb = &(this->vTh.back());
 		printf("try to kill thread(%d)FreeNum(%d)CurrentNum(%lu)\n", 
 			pTh_Cb->tid,iFreeNum,this->vTh.size());
@@ -79,13 +79,44 @@ void ZC_ThreadPool::TP_MonitorAutoKill()
 			printf("pthread_cancle thread(%d) Ok\n",pTh_Cb->tid);
 		}
 		this->vTh.pop_back();
-		pthread_mutex_unlock(&this->_mutex4FreeNum);
+		pthread_mutex_unlock(&this->_mutex4TpCb);
 		
 		free(pTh_Cb->pth);
 	}
 	_iCurrentNum -= iKillNum;
 	return;
 }
+
+void ZC_ThreadPool::TP_MonitorAutoAdd(int iReqNum)
+{ 
+	int iThreadNum = 0;
+	int iAddNum = 0;
+	
+	pthread_mutex_lock(&this->_mutex4TpCb);
+	iThreadNum = this->vTh.size();
+	
+	iAddNum = iReqNum/2 - iThreadNum;
+	printf("AddNum(%d)iReqNum(%d)iThreadNum(%d)\n", iAddNum, iReqNum, iThreadNum);
+	
+	if ((iAddNum >0) && (iThreadNum < _iEnableMaxNum))
+	{
+		for(int i = 0; i<iAddNum; i++)
+		{
+			int iRet = TP_AddThread();
+			if (iRet)
+			{
+				printf("Auto Add thread fail ret(%d) i(%d)", iRet, i);
+				pthread_mutex_unlock(&this->_mutex4TpCb);
+				return;
+			}
+			printf("try to add thread(%d)CurrentNum(%lu)\n", 
+				this->vTh[iThreadNum+i].tid, this->vTh.size());
+		}
+	}
+	pthread_mutex_unlock(&this->_mutex4TpCb);
+	return;
+}
+
 
 #if 0
 void ZC_ThreadPool::TP_MonitorAutoKill()
@@ -124,9 +155,11 @@ void* ZC_ThreadPool::TP_MonitorHandle(void *args)
 	while(p->_bTpAlive)
 	{
 		sleep(1);
-		if (p->_gList->ZL_GetReqListNumSafe() != 0)
+		int iReqNum = p->_gList->ZL_GetReqListNumSafe();
+		if (iReqNum != 0)
 		{
 			printf("Monitor BroadCast\n");
+			p->TP_MonitorAutoAdd(iReqNum);	
 			p->_gList->ZL_BroadCastCond();
 		}
 		
@@ -168,10 +201,10 @@ void* ZC_ThreadPool::TP_WorkHandle(void *args)
 		{
 			printf("pid(%d)tid(%d)wait \n", (unsigned int)pid, (unsigned int)tid);
 			/* modify free state */
-			pthread_mutex_lock(&p->_mutex4FreeNum);
+			pthread_mutex_lock(&p->_mutex4TpCb);
 			int iThread = p->TP_FindThread8Tid(tid);
 			p->vTh[iThread].bIsFree = true;
-			pthread_mutex_unlock(&p->_mutex4FreeNum);
+			pthread_mutex_unlock(&p->_mutex4TpCb);
 			
 			/* wait zclist req add */
 			p->_gList->ZL_Wait4Cond();
@@ -181,10 +214,10 @@ void* ZC_ThreadPool::TP_WorkHandle(void *args)
 			do
 			{
 				/* modify free state*/
-				pthread_mutex_lock(&p->_mutex4FreeNum);
+				pthread_mutex_lock(&p->_mutex4TpCb);
 				int iThread = p->TP_FindThread8Tid(tid);
 				p->vTh[iThread].bIsFree = false;
-				pthread_mutex_unlock(&p->_mutex4FreeNum);
+				pthread_mutex_unlock(&p->_mutex4TpCb);
 				
 				ZC_Node_S *pZcNode;
 				pZcNode = p->_gList->ZL_GetNodeSafe();
@@ -203,6 +236,30 @@ void* ZC_ThreadPool::TP_WorkHandle(void *args)
 	pthread_cleanup_pop(0);
 }
 
+int ZC_ThreadPool::TP_AddThread()
+{
+	pthread_t *pthread = (pthread_t*)malloc(sizeof(pthread_t));
+	if (NULL == pthread)
+	{
+		printf("pthread alloc fail");
+		return -1;
+	}
+	
+	pthread_create(pthread, 0, TP_WorkHandle, (void*)this);
+	Th_cb_S *pTh_Cb = (Th_cb_S*)malloc(sizeof(Th_cb_S));
+	if (NULL == pTh_Cb)
+	{
+		printf("pTh_Cb alloc fail");
+		return -1;
+	}
+	
+	pTh_Cb->bIsFree = 0;
+	pTh_Cb->tid = (unsigned int)(*pthread);
+	pTh_Cb->pth = pthread;
+	this->vTh.push_back(*pTh_Cb);
+	printf("thread tid(%d)create\n", (unsigned int)(*pthread));
+	return 0;
+}
 
 int ZC_ThreadPool::TP_Start()
 {
@@ -213,27 +270,12 @@ int ZC_ThreadPool::TP_Start()
 	{
 		_iCurrentNum++;
 		/* alloc thread and thread control block */
-		pthread_t *pthread = (pthread_t*)malloc(sizeof(pthread_t));
-		if (NULL == pthread)
+		int iRet = TP_AddThread();
+		if (iRet)
 		{
-			printf("pthread alloc fail");
-			return -1;
+			printf("Add Thread fail ret(%d)i(%d)\n", iRet, i);
+			return iRet;
 		}
-		
-		pthread_create(pthread, 0, TP_WorkHandle, (void*)this);
-		Th_cb_S *pTh_Cb = (Th_cb_S*)malloc(sizeof(Th_cb_S));
-		if (NULL == pTh_Cb)
-		{
-			printf("pTh_Cb alloc fail");
-			return -1;
-		}
-		
-		pTh_Cb->bIsFree = 0;
-		pTh_Cb->tid = (unsigned int)(*pthread);
-		pTh_Cb->pth = pthread;
-		this->vTh.push_back(*pTh_Cb);
-		
-		printf("thread tid(%d)create\n", (unsigned int)(*pthread));
 	}
 	
 	
