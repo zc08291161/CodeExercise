@@ -117,37 +117,6 @@ void ZC_ThreadPool::TP_MonitorAutoAdd(int iReqNum)
 	return;
 }
 
-
-#if 0
-void ZC_ThreadPool::TP_MonitorAutoKill()
-{ 
-	/*
-	for (int i = 0; i<6; i++)
-	{
-		printf("try to kill thread(%d)", (unsigned int)this->_tpArray[i]);
-		if (!pthread_cancel(this->_tpArray[i]))
-		{		
-			printf("pthread_cancle Loop(%d) Ok\n",i);
-		}
-	}
-	*/
-	/*
-	printf("try to kill thread(%d)\n", (unsigned int)this->_tpArray[0]);
-	if (!pthread_cancel(this->_tpArray[0]))
-	{		
-		printf("pthread_cancle Loop(%d) Ok\n",0);
-	}
-	*/
-	printf("try to kill thread(%d)\n", (unsigned int)this->_tpArray[1]);
-	if (!pthread_cancel(this->_tpArray[1]))
-	{		
-		printf("pthread_cancle Loop(%d) Ok\n",1);
-	}
-
-	return;
-}
-#endif
-
 void* ZC_ThreadPool::TP_MonitorHandle(void *args)
 {
 	ZC_ThreadPool *p=(ZC_ThreadPool *)args;
@@ -277,11 +246,6 @@ int ZC_ThreadPool::TP_Start()
 			return iRet;
 		}
 	}
-	
-	
-	//printf("pthread_join begin");
-	//pthread_join(MonitorTP, NULL);
-	//printf("pthread_join end");
 
 	return 0;
 }
